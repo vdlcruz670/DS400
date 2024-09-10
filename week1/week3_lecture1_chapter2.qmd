@@ -180,6 +180,13 @@ data(pop_vs_soda)
 
 3\) Build a posterior probability model determining the probability that the person is from the south based on using the word "pop": P(S\|A)\
 
+Exploratory Analysis
+
+```{r}
+ggplot(data = pop_vs_soda, aes(x = region, fill = pop)) + 
+  geom_bar()
+```
+
 ```{r}
 pop_vs_soda %>% 
   tabyl(pop) %>% 
@@ -221,3 +228,51 @@ likelihood_south_pop <- 0.07
 ```
 
 P(S\|A) = P(S)LP(S/A) / P(A)
+
+In class 9/10
+
+1\) Priors
+
+```{r}
+priors <- c(
+  midwest = 0.21,
+  northeast = 0.17,
+  south = 0.38,
+  west = 0.24
+)
+```
+
+2\) Regional Likelihoods
+
+```{r}
+pop_vs_soda %>% 
+  tabyl(pop, region) %>% 
+  adorn_percentages("col")
+```
+
+```{r}
+likelihoods <- pop_vs_soda %>% 
+  tabyl(pop, region) %>% 
+  adorn_percentages("col") %>% 
+  filter(pop == TRUE) %>% 
+  select(-pop) %>% 
+  unlist()
+
+likelihoods
+```
+
+3\) Marginal prior probability that a person uses the word pop
+
+```{r}
+prior_prob_pop <- sum(priors*likelihoods)
+
+prior_prob_pop
+```
+
+*This takes into account the census priors. We multiply it by the likelihoods of people who say pop, so that we can get the prior prob of people who say pop for the general US*
+
+4\) Finding our posterior probability P(S\|A)
+
+```{r}
+(priors[3] * likelihoods[3]) / prior_prob_pop
+```
