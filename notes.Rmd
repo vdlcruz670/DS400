@@ -1,0 +1,33 @@
+---
+title: "notes"
+author: "Victoria DelaCruz"
+date: "2024-09-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+A - the new information were taking into consideration
+B - the event we're calculcating probability for
+
+Unconditional probability == prior probability == B
+
+Likelihood
+- L(B|A) = P(A|B)
+- for the Likelihood calculation 
+-- we want row because we want the B rows to equal to a 100%
+
+P(B|A) == BAYES STAT
+
+Adorning percentages by column == P(B|A) == same thing as getting our Bayes answer
+
+
+We want that "given that" to equal 100, so in nhanes example, we wanted the B/diabetes to be 100
+
+
+
+
+
+

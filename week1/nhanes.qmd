@@ -77,8 +77,8 @@ df <- df %>%
   filter(DIQ010 %in% c(1, 2), DRD370B %in% c(1, 2)) %>%
   # Recode 1 to "Yes" and 2 to "No" for DIQ010 and DRD360
   mutate(
-    DIQ010 = ifelse(DIQ010 == 1, "Yes", "No"),
-    DRD370B = ifelse(DRD370B == 1, "Yes", "No")
+    DIQ010 = ifelse(DIQ010 == 1, "Has Diabetes", "No Diabetes"),
+    DRD370B = ifelse(DRD370B == 1, "Consumes Ahi", "No Ahi")
   )
   
 ```
@@ -122,13 +122,7 @@ prior_prob_tuna <- 0.3609
 ```
 
 2.  Determine the likelihood of eating tuna and having diabetes
-    -   L(B\|A)
-
-```{r}
-df %>% 
-  tabyl(DIQ010, DRD370B) %>% 
-  adorn_percentages("col") 
-```
+    -   L(B\|A) = P(A\|B)
 
 ```{r}
 df %>% 
@@ -137,7 +131,7 @@ df %>%
 ```
 
 ```{r}
-likelihood_tuna_diabetes <- 0.1278
+likelihood_tuna_diabetes <- 0.3584
 ```
 
 2.  Determine posterior probability via bayes theorem
@@ -147,6 +141,8 @@ likelihood_tuna_diabetes <- 0.1278
 ```{r}
 (prior_prob_diabetes*likelihood_tuna_diabetes) / prior_prob_tuna
 ```
+
+This means that both are independent variables, given that there's not much different between P(B\|A) and P(A).
 
 2.  What other questions can we ask of this data?
     1.  prob of diabetes for ethnicity, age
@@ -199,4 +195,66 @@ likelihood_diabetes_male <- 0.113
 
 ```{r}
 (prior_prob_diabetes * likelihood_diabetes_male) / prior_prob_male
+```
+
+## Diabetes and Age
+
+```{r}
+demographics <- demographics %>% 
+  select(SEQN, RIDRETH1, RIAGENDR, RIDAGEYR)
+```
+
+```{r}
+nhanes_data <- left_join(df, demographics, by = "SEQN")
+```
+
+```{r}
+nhanes_data <- nhanes_data %>% 
+  mutate(age_bracket = ifelse(RIDAGEYR > 40, "old", "young"))
+```
+
+### Bayes Theorem - Diabetes and Age
+
+```{r}
+print(prior_prob_diabetes) #P(B)
+```
+
+P(A)
+
+```{r}
+nhanes_data %>% 
+  tabyl(age_bracket) %>% 
+  adorn_totals("row")
+```
+
+```{r}
+prior_prob_old <- 0.534
+```
+
+L(B\|A) = P(A\|B)
+
+```{r}
+nhanes_data %>% 
+  tabyl(age_bracket, DIQ010) %>% 
+  adorn_percentages("col")
+```
+
+```{r}
+likelihood_age_diabetes <- 0.955
+```
+
+P(B\|A)
+
+-   P(B\|A) = P(B)LP(B/A) / P(A)
+
+```{r}
+(prior_prob_diabetes*likelihood_age_diabetes) / prior_prob_old
+```
+
+Getting P(B\|A) w/the function
+
+```{r}
+nhanes_data %>% 
+   tabyl(DIQ010, age_bracket) %>% 
+   adorn_percentages("col")
 ```
