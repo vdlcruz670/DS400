@@ -1,0 +1,98 @@
+---
+title: "naive bayes penguins"
+format: html
+editor: visual
+---
+
+### Libraries
+
+```{r, message = FALSE}
+library(tidyverse)
+library(bayesrules)
+library(janitor)
+library(e1071)
+```
+
+### Story
+
+We'll start our naive Bayes classification with just a single penguin. Suppose an Antarctic researcher comes across a penguin that weighs less than 4200g with a 195mm-long flipper and 50mm-long bill. Our goal is to help this researcher identify the species of this penguin, Adelie, Chinstrap, or Gentoo.
+
+#### Let's Plot!
+
+Make a visualization that will help the researcher determine the species based on the characteristics described above
+
+```{r}
+data(penguins_bayes)
+penguins <- penguins_bayes
+```
+
+```{r}
+ggplot(penguins, aes(x = bill_length_mm, y = species, fill = species)) +
+  geom_bar(stat = "identity")
+```
+
+```{r}
+ggplot(penguins, aes(x = bill_length_mm, y = flipper_length_mm, color = species, alpha = body_mass_g)) +
+  geom_point()
+```
+
+```{r}
+penguins <- penguins %>% 
+  mutate(above_average_weight = if_else
+         (above_average_weight == 1, "yes", "no"))
+```
+
+Our old bayesian ways
+
+P(B\|A)
+
+-   P(Chinstrap \| below average weight)
+
+```{r}
+penguins %>% 
+  tabyl(above_average_weight, species) %>% 
+  adorn_percentages("row")
+```
+
+### Naive Bayes Classification
+
+first argument is the variable you're trying to predict
+
+what you're trying to predict has to be a categorical variable
+
+```{r}
+naive_model_hints <- naiveBayes(species ~ flipper_length_mm + bill_length_mm + above_average_weight, data = penguins)
+```
+
+#### Our Penguin
+
+```{r}
+our_penguin <- data.frame(bill_length_mm = 50, flipper_length_mm = 195, above_average_weight = "no")
+```
+
+Ask our model to make a prediction of what species our penguin is
+
+```{r}
+predict(naive_model_hints, newdata = our_penguin, type = "raw")
+```
+
+Test our model for accuracy with confusion matrix
+
+. = since we're just adding it to a dataframe, our new data is everything in this dataframe (the period)
+
+```{r}
+penguins <- penguins %>% 
+  mutate(predicted_species = predict(naive_model_hints, newdata = .))
+```
+
+```{r}
+penguins %>% 
+  tabyl(species, predicted_species) %>% 
+  adorn_percentages("row") %>% 
+  adorn_pct_formatting(digits = 2) %>% 
+  adorn_ns
+```
+
+```{r}
+naive_model_hints
+```
