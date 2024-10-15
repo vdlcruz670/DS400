@@ -1,0 +1,200 @@
+---
+title: "Naive Bayes Classification Assignment"
+format: html
+editor: visual
+---
+
+## Assignment Description
+
+This assignment is designed to test your knowledge of Naive Bayes Classification. It closely mirrors our [naive_bayes_penguins.qmd](https://github.com/NSF-ALL-SPICE-Alliance/DS400/blob/main/week7/naive_bayes_penguins.qmd) from lectures 10/1 and 10/3. We reflect back on the true vs fake news dataset from the beginning of the semester and apply the new skills in our bayesian toolbox.
+
+This assignment is worth 16 points and is due by 10:00am on October 15th. Each section has a number of points noted. To turn in this assignment, render this qmd and save it as a pdf, it should look beautiful. If you do not want warning messages and other content in the rendered pdf, you can use `message = FALSE, warning = FALSE` at the top of each code chunk as it appears in the libraries code chunk below.
+
+### Load Libraries
+
+```{r, message=FALSE, warning=FALSE}
+library(bayesrules)
+library(tidyverse)
+library(e1071)
+library(janitor)
+library(skimr)
+```
+
+### Read in data
+
+```{r}
+data(fake_news)
+```
+
+### Challenge
+
+[**Exercise 14.7**](https://www.bayesrulesbook.com/chapter-14#exercises-13) **Fake news: three predictors**
+
+Suppose a ***new news article*** is posted online – it has a 15-word title, 6% of its words have negative associations, and its title *doesn’t* have an exclamation point. We want to know if it is fake or real
+
+### Visualization (Exploratory Data Analysis) - 2 points
+
+Below, insert a code chunk(s) and use `ggplot` to visualize the features of the data we are interested in. This can be one or multiple visualizations
+
+-   Type (fake vs real)
+
+-   Number of words in the title (numeric value)
+
+-   Negative associations (numeric value)
+
+-   Exclamation point in the title (true vs false)
+
+```{r}
+fake_news_data <- fake_news
+```
+
+```{r}
+skim(fake_news_data)
+```
+
+```{r}
+ggplot(data = fake_news_data, aes(x = title_words, y = negative, color = type, size = title_has_excl)) +
+         geom_point()
+```
+
+### Interpretation of Visualization - 2 points
+
+Below, write a few sentences explaining whether or not this ***new news article*** is true or fake solely using your visualization above
+
+Based on the description of the news news article and the visualization created above, I'd say that this new news article is *fake*. It falls around a cluster of points that are fake as well, around 15 words in the title, 6% negative, and it doesn't have an exclamation point.
+
+### Perform Naive Bayes Classification - 3 points
+
+Based on these three features (15-word title, 6% of its words have negative associations, and its title *doesn’t* have an exclamation point), utilize naive Bayes classification to calculate the posterior probability that the article is real. Do so using `naiveBayes()` with `predict()`.
+
+Below, insert the code chunks and highlight your answer
+
+```{r}
+naive_model_hints <- naiveBayes(type ~ title_words + negative + title_has_excl, data = fake_news_data)
+```
+
+```{r}
+our_article <- data.frame(title_words = 15, negative = 6.00, title_has_excl = FALSE)
+```
+
+```{r}
+predict(naive_model_hints, newdata = our_article, type = "raw")
+```
+
+Based on the Naive Bayes model, the article is [FAKE]{style="background-color: yellow;"}.
+
+### Break Down the Model - 5 points
+
+Similar to the penguins example, we are going to break down the model we created above. To do this we need to find:
+
+-   Probability(15 - word title\| article is real) using `dnorm()`
+
+-   Probability(6% of words have negative associations \| article is real) using `dnorm()`
+
+-   Probability(no exclamation point in title \| article is real)
+
+    -   Multiply these probabilities and save as the object **`probs_real`**
+
+-   Probability(15 - word title\| article is fake) using `dnorm()`
+
+-   Probability(6% of words have negative associations \| article is fake) using `dnorm()`
+
+-   Probability(no exclamation point in title \| article is fake)
+
+    -   Multiply these probabilities and save as the object **`probs_fake`**
+
+Lastly divide your **`probs_real`** by the sum of **`probs_real`** and **`probs_fake`** to see if you can reproduce the output from `naiveBayes()` above
+
+```{r}
+naive_model_hints
+```
+
+#### Fake
+
+Title_words
+
+```{r}
+dnorm(15, mean = 12.31, sd = 3.74)
+```
+
+Negative
+
+```{r}
+dnorm(6, mean = 3.61, sd = 1.47)
+```
+
+Title_has_excl
+
+```{r}
+fake_news_data %>% 
+  tabyl(type, title_has_excl) %>% 
+  adorn_percentages("row")
+```
+
+```{r}
+probs_fake <- (0.08235753*0.07157718*0.73)
+probs_fake
+```
+
+#### Real
+
+Title_words
+
+```{r}
+dnorm(15, mean = 10.42, sd = 3.20)
+```
+
+Negative
+
+```{r}
+dnorm(6, mean = 2.81, sd = 1.19)
+```
+
+Title_has_excl - 0.98
+
+```{r}
+probs_real <- (0.03678032*0.009224487*0.98)
+probs_real
+```
+
+```{r}
+probs_real / (probs_real + probs_fake)
+```
+
+### Confusion Matrix - 2 points
+
+Calculate a confusion matrix by first mutating a column to fake_news called `predicted_type` . Then, use `tabyl()` to create the matrix
+
+```{r}
+fake_news_data <- fake_news_data %>% mutate(predicted_article = predict(naive_model_hints, newdata = .))
+```
+
+```{r}
+fake_news_data %>% 
+  tabyl(type, predicted_article) %>%   adorn_percentages("row") %>% 
+  adorn_pct_formatting(digits = 2) %>% 
+  adorn_ns
+```
+
+### How can our model be improved? - 2 points
+
+Think about the results of the confusion matrix, is the model performing well? Try creating a new model that uses all of the features in the fake_news dataset to make a prediction on type (fake vs true). Then, create a new confusion matrix to see if the model improves.
+
+Based on the confusion matrix, I'd say that the model is performing okay, but can most definitely improve. It struggles with thinking an article is real when it's actually fake, but does well with the real-to-real- articles.
+
+```{r}
+naive_model_hints_all_features <- naiveBayes(type ~ ., data = fake_news)
+```
+
+```{r}
+fake_news_data <- fake_news%>% mutate(predicted_article_2 = predict(naive_model_hints_all_features, newdata = .))
+```
+
+```{r}
+fake_news_data %>% 
+  tabyl(type, predicted_article_2) %>%   adorn_percentages("row") %>% 
+  adorn_pct_formatting(digits = 2) %>% 
+  adorn_ns
+```
+
+Considering that we're looking at all the features, the model significantly improved (it labeled almost all the articles correctly!). It would be interesting to see which feature influences the model the most (we could do feature importance and random forest).
