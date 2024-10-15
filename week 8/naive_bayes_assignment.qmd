@@ -30,7 +30,7 @@ data(fake_news)
 
 [**Exercise 14.7**](https://www.bayesrulesbook.com/chapter-14#exercises-13) **Fake news: three predictors**
 
-Suppose a ***new news article*** is posted online – it has a 15-word title, 6% of its words have negative associations, and its title *doesn’t* have an exclamation point. We want to know if it is fake or real
+Suppose a ***new news article*** is posted online -- it has a 15-word title, 6% of its words have negative associations, and its title *doesn't* have an exclamation point. We want to know if it is fake or real
 
 ### Visualization (Exploratory Data Analysis) - 2 points
 
@@ -65,7 +65,7 @@ Based on the description of the news news article and the visualization created 
 
 ### Perform Naive Bayes Classification - 3 points
 
-Based on these three features (15-word title, 6% of its words have negative associations, and its title *doesn’t* have an exclamation point), utilize naive Bayes classification to calculate the posterior probability that the article is real. Do so using `naiveBayes()` with `predict()`.
+Based on these three features (15-word title, 6% of its words have negative associations, and its title *doesn't* have an exclamation point), utilize naive Bayes classification to calculate the posterior probability that the article is real. Do so using `naiveBayes()` with `predict()`.
 
 Below, insert the code chunks and highlight your answer
 
